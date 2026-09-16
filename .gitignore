@@ -1,2 +1,8 @@
 *.csv 
 *.gz 
+
+#PyCharm
+.idea/
+__pycache__/
+venv/
+.venv/
