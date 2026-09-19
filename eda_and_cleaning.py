@@ -33,3 +33,7 @@ ids_and_price = df_listings[["id", "price"]]
 
 merged_tables = df_calendar.merge(ids_and_price, how="inner", left_on="listing_id", right_on="id")
 print(merged_tables.head())
+
+merged_tables = merged_tables.drop(columns=["id"])
+
+merged_tables.to_csv(r"data\processed\nyc_pricing_base.csv.gz", index=False, compression="gzip")
