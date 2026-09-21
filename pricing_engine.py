@@ -15,9 +15,14 @@ df_processed['day_name'] = df_processed['date'].dt.day_name()
 
 df_processed['is_weekend'] = df_processed['day_name'].isin(['Friday', 'Saturday'])
 
+df_processed['multiplier'] = 1.0
 
-date_and_lead = df_processed[['date', 'day_name', 'is_weekend']]
+df_processed.loc[df_processed['is_weekend'] == True, 'multiplier'] += 0.15
+
+df_processed.loc[df_processed['lead_time_days'] < 7, 'multiplier'] -= 0.10
+
+df_processed['dynamic_price'] = (df_processed['price'] * df_processed['multiplier']).round(2)
+
+date_and_lead = df_processed[['date', 'price', 'lead_time_days', 'is_weekend', 'multiplier', 'dynamic_price']]
 
 print(date_and_lead.head(10))
-
-
