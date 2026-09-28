@@ -21,8 +21,18 @@ df_processed.loc[df_processed['is_weekend'] == True, 'multiplier'] += 0.15
 
 df_processed.loc[df_processed['lead_time_days'] < 7, 'multiplier'] -= 0.10
 
-df_processed['dynamic_price'] = (df_processed['price'] * df_processed['multiplier']).round(2)
+df_processed['month'] = df_processed['date'].dt.month
+
+df_processed.loc[df_processed['month'].isin([6, 7, 8, 12]), 'multiplier'] += 0.10
+
+df_processed.loc[df_processed['month'].isin([1, 2]), 'multiplier'] -= 0.10
+
+df_processed['dynamic_price'] = (df_processed['price'] * df_processed['multiplier']).round(2) \
+                                .clip(lower=30, upper=1500)
 
 date_and_lead = df_processed[['date', 'price', 'lead_time_days', 'is_weekend', 'multiplier', 'dynamic_price']]
 
-print(date_and_lead.head(10))
+#print(date_and_lead.head(10))
+print(df_processed['dynamic_price'].describe())
+
+df_processed.to_csv(r'data/processed/nyc_pricing_final.csv.gz', index=False, compression='gzip')
