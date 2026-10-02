@@ -1,9 +1,15 @@
 ﻿import pandas as pd
-
+import matplotlib.pyplot as plt
+from matplotlib.ticker import StrMethodFormatter
+plt.style.use('seaborn-v0_8-whitegrid')
 
 data_path = r'data\processed\nyc_pricing_final.csv.gz'
 
 dataFrame = pd.read_csv(data_path)
+
+dataFrame['date'] = pd.to_datetime(dataFrame['date'])
+
+dataFrame['price'] = dataFrame['price'].clip(upper=1500)
 
 baseline_revenue = dataFrame['price'].sum().round(0)
 
@@ -14,3 +20,41 @@ ROI = (((dynamic_revenue - baseline_revenue) / baseline_revenue) * 100).round(2)
 print(f"Revenue with old prices: {baseline_revenue}\n"
       f"Revenue with new prices: {dynamic_revenue}\n"
       f"ROI of the change: {ROI}")
+
+daily_avg = dataFrame.groupby('date')[['price', 'dynamic_price']].mean()
+
+plt.figure(figsize=(12, 6))
+
+plt.plot(daily_avg.index, daily_avg['price'],
+         label='Base Price', color='gray', alpha=0.5, linestyle='--')
+
+plt.plot(daily_avg.index, daily_avg['dynamic_price'].rolling(window=7).mean(),
+         label='Dynamic Price', color='blue', linewidth=2)
+
+plt.gca().yaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+
+plt.title('Price trend on year scale')
+plt.grid()
+plt.legend()
+
+
+july_data = daily_avg.loc['2026-07-01':'2026-07-31']
+plt.figure(figsize=(12, 6))
+
+plt.plot(july_data.index, july_data['price'],
+         label='Base Price', color='gray', alpha=0.5, linestyle='--')
+
+plt.plot(july_data.index, july_data['dynamic_price'],
+         label='Dynamic Price', color='blue', linewidth=2.5)
+
+plt.fill_between(july_data.index, july_data['price'], july_data['dynamic_price'],
+                 color='green', alpha=0.15, label='Profit Margin')
+
+plt.gca().yaxis.set_major_formatter(StrMethodFormatter('${x:,.0f}'))
+
+plt.title('Comparison of base price and new dynamic price')
+plt.legend()
+plt.grid()
+
+plt.show()
+
